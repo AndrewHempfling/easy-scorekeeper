@@ -66,6 +66,7 @@
     <div class="container">
         <div class="jumbotron">
             <h1>Easy Scorekeeper</h1>
+            <p class="text-muted">For easy, quick calculations, you can add, subtract, multiply, and divide within the score field. For instance, if you wanted to add 134 points to 39, just put 134+39 in the score input and it'll add for you.</p>
             <hr class="my-4 mx-0">
             <button class="btn btn-secondary" id="addContestant" type="button"><i class="fas fa-plus-circle mr-2"></i>Add Player</button>
             <button class="btn btn-secondary float-right" type="button" data-toggle="modal" data-target="#confirmDelete"><i class="fas fa-trash-alt mr-2"></i>Clear All</button>
@@ -116,6 +117,7 @@
 
     <script>
         $(function() {
+            $('#help').tooltip()
             $("#contestants").sortable();
             var clipboard = new ClipboardJS('.btn');
             $('ul').on('focusout', 'input', function() {
@@ -243,7 +245,6 @@
                                         <input class="form-control player-name" type="text" name="" value="${playerParams[i].n}" placeholder="Name" aria-label="Name">
                                     </div>
                                 </div>
-
                                 <div class="col">
                                     <div class="input-group">
                                         <div class="input-group-prepend">
