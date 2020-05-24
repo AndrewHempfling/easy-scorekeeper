@@ -112,6 +112,29 @@
                 </div>
             </div>
         </div>
+
+        <div class="modal fade" id="confirmDeleteOne" tabindex="-1" role="dialog"
+            aria-labelledby="confirmDeleteIndividual" aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="confirmDeleteIndividual">Delete</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <i class="fas fa-exclamation-triangle mr-2 text-warning"></i>Delete Player? This can't be
+                        undone.
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-danger" id="clearOne" data-dismiss="modal">Confirm</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <div class="jumbotron mt-5">
         </div>
     </div>
@@ -132,7 +155,6 @@
         $(function () {
 
             var clipboard = new ClipboardJS('.btn');
-
 
             if (window.location.search == '') {
                 for (i = 0; i < 8; i++) {
@@ -159,7 +181,6 @@
             }
 
             function fromURL() {
-                //$("#contestants").empty();
                 var leaderboardObject = [];
                 if (window.location.search != '') {
                     var scoreParams = window.location.search.replace(/\?/g, '').split('&');
@@ -185,6 +206,7 @@
 
                     return lbl;
                 }
+                $('#contestants')[0].scrollIntoView()
             }
 
 
@@ -216,7 +238,7 @@
                 }
 
                 var l = `
-                        <li class="list-group-item player" data-rank="${rank}" data-score="${scoreValue}">
+                        <li class="list-group-item player" id="${rank+nameValue.replace(/\W/g,'')+scoreValue}" data-rank="${rank}" data-score="${scoreValue}">
                             <div class="row">
                                 <span class="rankLbl my-auto ml-2">${rank}</span>
                                 <div class="col">
@@ -244,7 +266,8 @@
                                         </div>
                                     </div>
                                 </div>
-                                <button class="btn btn-link-dark mx-0 my-auto p-1 removePlayer">
+                                <button class="btn btn-link-dark mx-0 my-auto p-1" onclick="removePlayer(this)" data-toggle="modal"
+                data-target="#confirmDeleteOne">
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             </div>
@@ -252,6 +275,10 @@
                         `;
                 return l;
             }
+
+            $('ul').on('focusin', 'input', function () {
+                $(this).attr('data-stored-value', $(this).val());
+            });
 
             $('ul').on('change', 'input', function () {
                 var val = $(this).val();
@@ -269,10 +296,19 @@
                     }
                 } else if ($(this).hasClass('player-name') && $(this).val() != '') {
                     var v = $(this).val();
-                    var uniqueName = Object.values($('.player-name')).map(x => x.value).indexOf(v);
+                    var selected = $(this)[0];
+
+                    function removeSelected(thisEl) {
+                        return $(this)[0] != selected;
+                    }
+
+                    var uniqueName = Object.values($('.player-name').filter(removeSelected)).map(x => x
+                        .value).indexOf(v);
+
+                    console.log(uniqueName)
                     if (uniqueName != -1) {
                         alert('Player names have to be unique');
-                        $(this).val('');
+                        $(this).val($(this).attr('data-stored-value'));
                     }
                 }
                 constructPlayers();
@@ -318,14 +354,19 @@
                 v.val(parseInt(v.val()) - 1)
                 constructPlayers();
             });
-
-            $('ul').on('click', '.removePlayer', function () {
-                var v = $(this).closest('li');
-                v.remove();
-                constructPlayers();
-            });
-
         });
+
+        function removePlayer(elem) {
+            var v = elem.parentElement.parentElement.id;
+            document.getElementById('clearOne').onclick = function () {
+                deleteElementbyID(v)
+            };
+        }
+
+        function deleteElementbyID(id) {
+            console.log(id)
+            document.getElementById(id).outerHTML = '';
+        }
     </script>
 </body>
 
