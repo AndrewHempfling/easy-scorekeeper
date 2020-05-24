@@ -112,6 +112,8 @@
                 </div>
             </div>
         </div>
+        <div class="jumbotron mt-5">
+        </div>
     </div>
 
 
@@ -124,15 +126,134 @@
         integrity="sha384-OgVRvuATP1z7JjHLkuOU7Xw704+h835Lr+6QL9UvYjZE3Ipu6Tp75j7Bh/kR0JKI" crossorigin="anonymous">
     </script>
     <script src="https://cdn.jsdelivr.net/npm/clipboard-js@0.3.6/clipboard.min.js"></script>
-    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.4/clipboard.min.js"></script>
 
     <script>
         $(function () {
-            $('#help').tooltip()
-            $("#contestants").sortable();
+
             var clipboard = new ClipboardJS('.btn');
-            $('ul').on('focusout', 'input', function () {
+
+
+            if (window.location.search == '') {
+                for (i = 0; i < 8; i++) {
+                    $("#contestants").append(makeLI(i + 1, '', 0))
+                }
+            } else {
+                fromURL();
+            }
+
+            function constructPlayers() {
+                var playersStr = '';
+                var playerArr = [];
+                $('.player').each(function (p) {
+                    var name = $(this).find('.player-name').eq(0).val();
+                    var score = $(this).find('.player-score').eq(0).val();
+                    var playerObj = new Object()
+                    playerObj.n = name;
+                    playerObj.s = score;
+                    playerArr.push(playerObj)
+                });
+                var plrStr = '?' + encodeURIComponent(JSON.stringify(playerArr));
+                window.location.href = window.location.pathname + plrStr;
+                fromURL();
+            }
+
+            function fromURL() {
+                //$("#contestants").empty();
+                var leaderboardObject = [];
+                if (window.location.search != '') {
+                    var scoreParams = window.location.search.replace(/\?/g, '').split('&');
+                    var playerParams = JSON.parse(decodeURIComponent(scoreParams));
+                    var scoreSort = playerParams.sort((a, b) => b.s.localeCompare(a.s));
+                    var output = Object.entries(playerParams).map(x => (parseInt(x[0]) + 1) + rankTxt(parseInt(
+                        x[0])) + ': ' + x[1].n + ', ' + x[1].s)
+                    $('#scoreText').val(output.join('  |  '));
+                    $('#scoreText').innerHeight(document.getElementById("scoreText").scrollHeight);
+                    var display = Object.entries(playerParams).map(x => makeLI((parseInt(x[0]) + 1), x[1].n, x[
+                        1].s))
+                    $('#contestants').html(display);
+                }
+
+                function rankTxt(rankInt, delim) {
+                    var placeLabel = ['st', 'nd', 'rd', 'th']
+                    var lbl;
+                    if (rankInt < 3) {
+                        lbl = placeLabel[rankInt];
+                    } else {
+                        lbl = placeLabel[3];
+                    }
+
+                    return lbl;
+                }
+            }
+
+
+            $('#addContestant').click(function () {
+                newPlayer();
+                $('input').eq(0).focus();
+            });
+
+            function newPlayer() {
+                $("#contestants").prepend(makeLI());
+            }
+
+            $('#clearAll').click(function () {
+                $('#scoreText').val('');
+                $('#contestants').empty();
+                $('#confirmDelete').modal('hide');
+                window.location.href = window.location.pathname;
+            });
+
+            function makeLI(rank, nameValue, scoreValue) {
+                if (!rank) {
+                    rank = '';
+                }
+                if (!nameValue) {
+                    nameValue = '';
+                }
+                if (!scoreValue) {
+                    scoreValue = 0;
+                }
+
+                var l = `
+                        <li class="list-group-item player" data-rank="${rank}" data-score="${scoreValue}">
+                            <div class="row">
+                                <span class="rankLbl my-auto ml-2">${rank}</span>
+                                <div class="col">
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">Name</span>
+                                        </div>
+                                        <input class="form-control player-name" type="text" name="" value="${nameValue}" placeholder="Name" aria-label="Name">
+                                    </div>
+                                </div>
+                                <div class="col">
+                                    <div class="input-group">
+                                        <div class="input-group-prepend">
+                                            <span class="input-group-text">Score</span>
+                                        </div>
+                                        <input class="form-control player-score" type="text" name="" value="${scoreValue}" aria-label="score">
+                                        <div class="input-group-append d-flex flex-column p-0">
+                                            <button class="btn btn-secondary m-0 p-0 border-0 plus-minus up">
+                                                <i class="fa fa-caret-up px-2 m-auto"></i> 
+                                            </button>
+
+                                            <button class="btn btn-secondary m-0 p-0 border-0 plus-minus down">
+                                                <i class="fa fa-caret-down px-2 m-auto"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn btn-link-dark mx-0 my-auto p-1 removePlayer">
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </li>
+                        `;
+                return l;
+            }
+
+            $('ul').on('change', 'input', function () {
                 var val = $(this).val();
                 if ($(this).hasClass('player-score')) {
                     if (val.match(/[+\-\*\/]/g) != null && val.match(/[+\-\*\/]/g).length == 1) {
@@ -145,6 +266,13 @@
                         } else {
                             $(this).val(parseInt(val.split('/')[0]) / parseInt(val.split('/')[1]));
                         }
+                    }
+                } else if ($(this).hasClass('player-name') && $(this).val() != '') {
+                    var v = $(this).val();
+                    var uniqueName = Object.values($('.player-name')).map(x => x.value).indexOf(v);
+                    if (uniqueName != -1) {
+                        alert('Player names have to be unique');
+                        $(this).val('');
                     }
                 }
                 constructPlayers();
@@ -197,156 +325,6 @@
                 constructPlayers();
             });
 
-            function constructPlayers() {
-                var playersStr = '';
-                var playerArr = [];
-                $('.player').each(function (p) {
-                    var name = $(this).find('.player-name').eq(0).val();
-                    var score = $(this).find('.player-score').eq(0).val();
-                    var playerObj = new Object()
-                    playerObj.n = name;
-                    playerObj.s = score;
-                    playerArr.push(playerObj)
-                });
-                var plrStr = '?' + encodeURIComponent(JSON.stringify(playerArr));
-                window.location.href = window.location.pathname + plrStr;
-                fromURL();
-            }
-
-            function fromURL() {
-                $("#contestants").empty();
-                var leaderboardObject = [];
-                var placeLabel = ['st Place:', 'nd Place:', 'rd Place:', 'th Place:']
-                if (window.location.search != '') {
-                    var scoreParams = window.location.search.replace(/\?/g, '').split('&');
-                    var playerParams = JSON.parse(decodeURIComponent(scoreParams));
-                    var scoreAsc = playerParams.map(x => x.s).sort(function (a, b) {
-                        return b - a;
-                    })
-                    var justNames = playerParams.map(x => x.n);
-                    for (i = 0; i < scoreAsc.length; i++) {
-                        var rankOb = new Object();
-                        var lbl;
-                        if (i < 3) {
-                            lbl = placeLabel[i];
-                        } else {
-                            lbl = placeLabel[3];
-                        }
-                        var rankIndex = playerParams.map(x => x.s).indexOf(scoreAsc[i]);
-                        var rankedName;
-                        //rankOb.rank = (i + 1) + lbl;
-                        if (leaderboardObject.map(x => x.name).indexOf(rankedName) == -1) {
-                            rankedName = playerParams.map(x => x.n)[rankIndex];
-                        } else {
-                            for (ii = 0; ii < playerParams.map(x => x.n).length; ii++) {
-                                if (leaderboardObject.map(x => x.name).indexOf(ii) == -1) {
-                                    rankedName = playerParams.map(x => x.n)[ii];
-                                }
-                            }
-                        }
-                        rankOb.rank = (i + 1) + lbl;
-                        rankOb.name = rankedName;
-                        rankOb.score = scoreAsc[i];
-                        leaderboardObject.push(rankOb);
-                    }
-
-                    $('#scoreText').val(leaderboardObject.map(x => x.rank + ' ' + x.name + ' – ' + x.score)
-                        .join('\n'));
-                    $('#scoreText').innerHeight(document.getElementById("scoreText").scrollHeight)
-                    for (i = 0; i < playerParams.length; i++) {
-                        var liHTML = `
-                        <li class="list-group-item player">
-                            <div class="row">
-                                <i class="fas fa-grip-lines-vertical my-auto ml-2"></i>
-                                <div class="col">
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">Name</span>
-                                        </div>
-                                        <input class="form-control player-name" type="text" name="" value="${playerParams[i].n}" placeholder="Name" aria-label="Name">
-                                    </div>
-                                </div>
-                                <div class="col">
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">Score</span>
-                                        </div>
-                                        <input class="form-control player-score" type="text" name="" value="${playerParams[i].s}" aria-label="score">
-                                        <div class="input-group-append d-flex flex-column p-0">
-                                            <button class="btn btn-secondary m-0 p-0 border-0 plus-minus up">
-                                                <i class="fa fa-caret-up px-2 m-auto"></i> 
-                                            </button>
-
-                                            <button class="btn btn-secondary m-0 p-0 border-0 plus-minus down">
-                                                <i class="fa fa-caret-down px-2 m-auto"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <button class="btn btn-link-dark mx-0 my-auto p-1 removePlayer">
-                                    <i class="fas fa-minus-square"></i>
-                                </button>
-                            </div>
-                        </li>
-                        `;
-                        $("#contestants").append(liHTML)
-                    }
-                }
-            }
-
-            fromURL();
-
-            $('#addContestant').click(function () {
-                newPlayer()
-                $('input').eq(0).focus();
-            });
-
-            function newPlayer() {
-                var newLI = `
-                        <li class="list-group-item player">
-                            <div class="row">
-                                <i class="fas fa-grip-lines-vertical my-auto ml-2"></i>
-                                <div class="col">
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">Name</span>
-                                        </div>
-                                        <input class="form-control player-name" type="text" name="" value="" placeholder="Name" aria-label="Name">
-                                    </div>
-                                </div>
-
-                                <div class="col">
-                                    <div class="input-group">
-                                        <div class="input-group-prepend">
-                                            <span class="input-group-text">Score</span>
-                                        </div>
-                                        <input class="form-control player-score" type="text" name="" value="0" aria-label="score">
-                                        <div class="input-group-append d-flex flex-column p-0">
-                                            <button class="btn btn-secondary m-0 p-0 border-0 plus-minus up">
-                                                <i class="fa fa-caret-up px-2 m-auto"></i> 
-                                            </button>
-
-                                            <button class="btn btn-secondary m-0 p-0 border-0 plus-minus down">
-                                                <i class="fa fa-caret-down px-2 m-auto"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                                <button class="btn btn-link-dark mx-0 my-auto p-1 removePlayer">
-                                    <i class="fas fa-minus-square"></i>
-                                </button>
-                            </div>
-                        </li>
-                        `;
-                $("#contestants").prepend(newLI);
-            }
-
-            $('#clearAll').click(function () {
-                $('#scoreText').val('');
-                $('#contestants').empty();
-                $('#confirmDelete').modal('hide');
-                window.location.href = window.location.pathname;
-            });
         });
     </script>
 </body>
