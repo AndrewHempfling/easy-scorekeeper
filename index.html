@@ -72,8 +72,12 @@
                 score field. For instance, if you wanted to add 134 points to 39, just put 134+39 in the score input and
                 it'll add for you.</p>
             <hr class="my-4 mx-0">
-            <button class="btn btn-secondary" id="addContestant" type="button"><i
-                    class="fas fa-plus-circle mr-2"></i>Add Player</button>
+            <div class="float-left"></div>
+            <button class="btn btn-secondary" id="addContestant" type="button">
+                <i class="fas fa-plus-circle mr-2"></i>Add Player</button>
+            <button class="btn btn-secondary" id="addList" type="button" data-toggle="modal" data-target="#listModal">
+                <i class="fas fa-list-ul mr-2"></i>Create List</button>
+
             <button class="btn btn-secondary float-right" type="button" data-toggle="modal"
                 data-target="#confirmDelete"><i class="fas fa-trash-alt mr-2"></i>Clear All</button>
         </div>
@@ -130,6 +134,36 @@
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                         <button type="button" class="btn btn-danger" id="clearOne" data-dismiss="modal">Confirm</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="modal fade" id="listModal" tabindex="-1" role="dialog" aria-labelledby="listModalTitle"
+            aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="listModalTitle">New Player List</h5>
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <textarea class="form-control" id="playerList" rows="3"></textarea>
+                            <div class="text-muted float-left mt-3">Separate names by comma, semicolon, or new line
+                            </div>
+                            <div class="text-muted float-right mt-3" id="playerCount">0</div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <div class="float-left text-muted"></div>
+                        <div class="float-right">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" data-dismiss="modal"
+                                id="createPlayerList">Ceate Player List</button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -209,6 +243,25 @@
                 $('#contestants')[0].scrollIntoView()
             }
 
+            $('#playerList').keyup(function (e) {
+                e.preventDefault();
+                var allSplit = $(this).val().split('\n').join().split(';').join().split(',');
+                var playerList = allSplit.map(x => x.replace(/(^\s*)|(\s*$)/g, ''))
+                var noDup = playerList.map(x => playerList.indexOf(x)).join() == playerList.map((x,
+                    y) => y).join()
+                if (noDup == false) {
+                    $('#createPlayerList').attr('disabled', 'true');
+                    $('#createPlayerList').removeAttr('data-player-array');
+                    $('#createPlayerList').html(
+                        '<i class="fas fa-exclamation-circle mr-2 text-warning"></i>Duplicate Names'
+                    );
+                } else {
+                    $('#createPlayerList').removeAttr('disabled');
+                    $('#createPlayerList').attr('data-player-array', playerList);
+                    $('#createPlayerList').html('Ceate Player List')
+                }
+                $('#playerCount').html(playerList.length)
+            });
 
             $('#addContestant').click(function () {
                 newPlayer();
@@ -346,6 +399,12 @@
             $('ul').on('click', '.up', function () {
                 var v = $(this).closest('.input-group').find('input');
                 v.val(parseInt(v.val()) + 1)
+                constructPlayers();
+            });
+
+            $('#createPlayerList').click(function () {
+                var lst = $(this).attr('data-player-array').split(',');
+                $('#contestants').html(lst.map((x, y) => makeLI(y + 1, x, 0)));
                 constructPlayers();
             });
 
