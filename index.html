@@ -82,7 +82,7 @@
                 data-target="#confirmDelete"><i class="fas fa-trash-alt mr-2"></i>Clear All</button>
         </div>
         <div class="row">
-            <div class="col-sm-12 col-md-6">
+            <div class="col-sm-12 col-md-6 mb-5">
                 <ul id="contestants" class="list-group">
                 </ul>
             </div>
@@ -219,7 +219,7 @@
                 if (window.location.search != '') {
                     var scoreParams = window.location.search.replace(/\?/g, '').split('&');
                     var playerParams = JSON.parse(decodeURIComponent(scoreParams));
-                    var scoreSort = playerParams.sort((a, b) => b.s.localeCompare(a.s));
+                    var scoreSort = playerParams.sort((a, b) => (parseInt(b.s) > parseInt(a.s)) ? 1 : -1);
                     var output = Object.entries(playerParams).map(x => (parseInt(x[0]) + 1) + rankTxt(parseInt(
                         x[0])) + ': ' + x[1].n + ', ' + x[1].s)
                     $('#scoreText').val(output.join('  |  '));
