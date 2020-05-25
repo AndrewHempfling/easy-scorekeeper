@@ -72,14 +72,19 @@
                 score field. For instance, if you wanted to add 134 points to 39, just put 134+39 in the score input and
                 it'll add for you.</p>
             <hr class="my-4 mx-0">
-            <div class="float-left"></div>
-            <button class="btn btn-secondary" id="addContestant" type="button">
-                <i class="fas fa-plus-circle mr-2"></i>Add Player</button>
-            <button class="btn btn-secondary" id="addList" type="button" data-toggle="modal" data-target="#listModal">
-                <i class="fas fa-list-ul mr-2"></i>Create List</button>
-
-            <button class="btn btn-secondary float-right" type="button" data-toggle="modal"
-                data-target="#confirmDelete"><i class="fas fa-trash-alt mr-2"></i>Clear All</button>
+            <div class="row">
+                <div class="float-left col-sm-12 mt-3">
+                    <button class="btn btn-secondary" id="addContestant" type="button">
+                        <i class="fas fa-plus-circle mr-2"></i>Add Player</button>
+                    <button class="btn btn-secondary" id="addList" type="button" data-toggle="modal"
+                        data-target="#listModal">
+                        <i class="fas fa-list-ul mr-2"></i>Create List</button>
+                </div>
+                <div class="float-right col-sm-12 mt-3">
+                    <button class="btn btn-secondary" type="button" data-toggle="modal" data-target="#confirmDelete"><i
+                            class="fas fa-trash-alt mr-2"></i>Clear All</button>
+                </div>
+            </div>
         </div>
         <div class="row">
             <div class="col-sm-12 col-md-6 mb-5">
@@ -91,6 +96,10 @@
                 <button class="btn btn-outline-dark my-3" data-clipboard-target="#scoreText">
                     <i class="fas fa-copy mr-2"></i>Copy
                 </button>
+                <iframe frameborder="0" scrolling="no" id="bexarstage"
+                    src="https://www.twitch.tv/embed/hebo/chat?parent=andrewhempfling.github.io" height="300"
+                    width="100%">
+                </iframe>
             </div>
         </div>
 
@@ -296,7 +305,7 @@
                                 <span class="rankLbl my-auto ml-2">${rank}</span>
                                 <div class="col">
                                     <div class="input-group">
-                                        <div class="input-group-prepend">
+                                        <div class="input-group-prepend d-none d-sm-block">
                                             <span class="input-group-text">Name</span>
                                         </div>
                                         <input class="form-control player-name" type="text" name="" value="${nameValue}" placeholder="Name" aria-label="Name">
@@ -304,7 +313,7 @@
                                 </div>
                                 <div class="col">
                                     <div class="input-group">
-                                        <div class="input-group-prepend">
+                                        <div class="input-group-prepend d-none d-sm-block">
                                             <span class="input-group-text">Score</span>
                                         </div>
                                         <input class="form-control player-score" type="text" name="" value="${scoreValue}" aria-label="score">
